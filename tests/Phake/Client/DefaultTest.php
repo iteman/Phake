@@ -71,8 +71,12 @@ class Phake_Client_DefaultTest extends PHPUnit_Framework_TestCase
 	{
 		$result = new Phake_CallRecorder_VerifierResult(FALSE, array(), 'failure message');
 		
-		$this->setExpectedException('Exception', 'failure message');
-		$this->client->processVerifierResult($result);
+		try {
+			$this->client->processVerifierResult($result);
+			$this->fail('An expected exception has not been raised.');
+		} catch (Exception $e) {
+			$this->assertEquals('failure message', $e->getMessage());
+		}
 	}
 }
 ?>

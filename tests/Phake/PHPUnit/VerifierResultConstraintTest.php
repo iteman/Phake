@@ -63,13 +63,13 @@ class Phake_PHPUnit_VerifierResultConstraintTest extends PHPUnit_Framework_TestC
 	public function testEvaluateReturnsTrueIfVerifyResultIsTrue()
 	{
 		$result = new Phake_CallRecorder_VerifierResult(TRUE, array());
-		$this->assertTrue($this->constraint->evaluate($result));
+		$this->assertTrue($this->constraint->evaluate($result, '', true));
 	}
 	
 	public function testEvaluateReturnsFalseWhenVerifierReturnsFalse()
 	{
 		$result = new Phake_CallRecorder_VerifierResult(FALSE, array());
-		$this->assertFalse($this->constraint->evaluate($result));
+		$this->assertFalse($this->constraint->evaluate($result, '', true));
 	}
 	
 	/**
@@ -91,12 +91,12 @@ class Phake_PHPUnit_VerifierResultConstraintTest extends PHPUnit_Framework_TestC
 		
 		try
 		{
-			$this->constraint->fail($result, '');
+			$this->constraint->evaluate($result, '');
 			$this->fail('expected an exception to be thrown');
 		}
 		catch (PHPUnit_Framework_ExpectationFailedException $e)
 		{
-			$this->assertEquals('The call failed!', $e->getDescription());
+			$this->assertEquals('Failed asserting that The call failed!.', $e->getMessage());
 		}
 	}
 	
@@ -105,7 +105,7 @@ class Phake_PHPUnit_VerifierResultConstraintTest extends PHPUnit_Framework_TestC
 	 */
 	public function testFailThrowsWhenArgumentIsNotAResult()
 	{
-		$this->constraint->fail('', '');
+		$this->constraint->evaluate('', '');
 	}
 }
 ?>

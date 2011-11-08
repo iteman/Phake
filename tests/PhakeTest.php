@@ -84,7 +84,7 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 	 * Tests that a simple method call verification with throw an exception if that method was not
 	 * called.
 	 *
-	 * @expectedException Exception
+	 * @expectedException PHPUnit_Framework_ExpectationFailedException
 	 */
 	public function testSimpleVerifyThrowsExceptionOnFail()
 	{
@@ -174,7 +174,7 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 	/**
 	 * Tests passing a basic equals matcher to the verify method will correctly fail when matcher is not satisfied.
 	 *
-	 * @expectedException Exception
+	 * @expectedException PHPUnit_Framework_ExpectationFailedException
 	 */
 	public function testVerifyCallWithEqualsMatcherFails()
 	{
@@ -200,7 +200,7 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 	/**
 	 * Tests passing a default matcher type to the verify method will correctly fail when matcher is not satisfied.
 	 *
-	 * @expectedException Exception
+	 * @expectedException PHPUnit_Framework_ExpectationFailedException
 	 */
 	public function testVerifyCallWithDefaultMatcherFails()
 	{
@@ -226,7 +226,7 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 	/**
 	 * Tests passing in a PHPUnit constraint to the verifier fails when constraint not met.
 	 *
-	 * @expectedException Exception
+	 * @expectedException PHPUnit_Framework_ExpectationFailedException
 	 */
 	public function testVerifyCallWithPHPUnitMatcherFails()
 	{
@@ -257,7 +257,7 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 	/**
 	 * Tests passing in a Hamcrest matcher to the verifier fails when constraint not met.
 	 *
-	 * @expectedException Exception
+	 * @expectedException PHPUnit_Framework_ExpectationFailedException
 	 */
 	public function testVerifyCallWithHamcrestMatcherFails()
 	{
@@ -343,7 +343,7 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 
 		Phake::reset($mock);
 
-		$this->setExpectedException('Exception');
+		$this->setExpectedException('PHPUnit_Framework_ExpectationFailedException');
 
 		Phake::verify($mock)->foo();
 	}
@@ -540,13 +540,15 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 		$mock->callInnerFunc();
 		$mock->fooWithReturnValue();
 
-		$this->setExpectedException('Exception');
-
-		Phake::inOrder(
-			Phake::verify($mock)->foo(),
-			Phake::verify($mock)->fooWithReturnValue(),
-			Phake::verify($mock)->callInnerFunc()
-		);
+		try {
+			Phake::inOrder(
+				Phake::verify($mock)->foo(),
+				Phake::verify($mock)->fooWithReturnValue(),
+				Phake::verify($mock)->callInnerFunc()
+			);
+			$this->fail('An expected exception has not been raised.');
+		} catch (Exception $e) {
+		}
 	}
 
 	/**
@@ -587,12 +589,14 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 		$mock2->fooWithReturnValue();
 		$mock2->callInnerFunc();
 
-		$this->setExpectedException('Exception');
-
-		Phake::inOrder(
-			Phake::verify($mock2)->fooWithReturnValue(),
-			Phake::verify($mock1)->callInnerFunc()
-		);
+		try {
+			Phake::inOrder(
+				Phake::verify($mock2)->fooWithReturnValue(),
+				Phake::verify($mock1)->callInnerFunc()
+			);
+			$this->fail('An expected exception has not been raised.');
+		} catch (Exception $e) {
+		}
 	}
 
 	/**
@@ -606,9 +610,11 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 
 		Phake::verifyNoFurtherInteraction($mock);
 
-		$this->setExpectedException('Exception');
-
-		$mock->foo();
+		try {
+			$mock->foo();
+			$this->fail('An expected exception has not been raised.');
+		} catch (Exception $e) {
+		}
 	}
 
 	/**
@@ -622,8 +628,11 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 
 		$mock->foo();
 
-		$this->setExpectedException('Exception');
-		Phake::verifyNoInteraction($mock);
+		try {
+			Phake::verifyNoInteraction($mock);
+			$this->fail('An expected exception has not been raised.');
+		} catch (Exception $e) {
+		}
 	}
 
 	/**
@@ -666,7 +675,7 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 
 		$mock->fooWithArgument('FOO');
 
-		$this->setExpectedException('Exception');
+		$this->setExpectedException('PHPUnit_Framework_ExpectationFailedException');
 		Phake::verify($mock)->fooWithArgument(Phake::capture($toArgument)->when('BAR'));
 	}
 
@@ -801,7 +810,7 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 
 	/**
 	 * Tests times doesn't match
-	 * @expectedException Exception
+	 * @expectedException PHPUnit_Framework_ExpectationFailedException
 	 */
 	public function testVerifyTimesMismatch()
 	{
@@ -840,7 +849,7 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 
 	/**
 	 * Tests that at least doesn't match
-	 * @expectedException Exception
+	 * @expectedException PHPUnit_Framework_ExpectationFailedException
 	 */
 	public function testVerifyAtLeastMismatch()
 	{
@@ -860,7 +869,7 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 
 	/**
 	 * Tests that never catches an invocation
-	 * @expectedException Exception
+	 * @expectedException PHPUnit_Framework_ExpectationFailedException
 	 */
 	public function testNeverMismatch()
 	{
@@ -890,7 +899,7 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 
 	/**
 	 * Tests that atMost fails on over calls
-	 * @expectedException Exception
+	 * @expectedException PHPUnit_Framework_ExpectationFailedException
 	 */
 	public function testAtMostOver()
 	{
@@ -902,13 +911,16 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 
 	/**
 	 * Tests that the given exception is thrown on thenThrow.
-	 * @expectedException Exception
 	 */
 	public function testStubThenThrow()
 	{
 		$mock = Phake::mock('PhakeTest_MockedClass');
 		Phake::when($mock)->foo()->thenThrow(new Exception());
-		$mock->foo();
+		try {
+			$mock->foo();
+			$this->fail('An expected exception has not been raised.');
+		} catch (Exception $e) {
+		}
 	}
 
 	/**
@@ -956,7 +968,7 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 	{
 		$mock = Phake::mock('PhakeTest_MockedClass');
 
-		$this->setExpectedException('Exception', 'Expected PhakeTest_MockedClass->foo() to be called exactly <1> times, actually called <0> times. In fact, there are no interactions with this mock.');
+		$this->setExpectedException('PHPUnit_Framework_ExpectationFailedException', 'Expected PhakeTest_MockedClass->foo() to be called exactly <1> times, actually called <0> times. In fact, there are no interactions with this mock.');
 		Phake::verify($mock)->foo();
 	}
 
@@ -966,7 +978,7 @@ class PhakeTest extends PHPUnit_Framework_TestCase
 
 		$mock->foo('test');
 
-		$this->setExpectedException('Exception', 'Expected PhakeTest_MockedClass->foo() to be called exactly <1> times, actually called <0> times.' . "\n"
+		$this->setExpectedException('PHPUnit_Framework_ExpectationFailedException', 'Expected PhakeTest_MockedClass->foo() to be called exactly <1> times, actually called <0> times.' . "\n"
 		. "Other Invocations:\n" .
 		  "  PhakeTest_MockedClass->foo(<string:test>)");
 
